@@ -1,0 +1,11 @@
+/.gradle/
+/build/
+/app/build/
+/local.properties
+*.iml
+.idea/
+*.keystore
+module_build/
+*.apk
+*.zip
+app/libs/xposed-api.jar

@@ -1,0 +1,8 @@
+# Пример-степа: распаковать xposed-api.jar из secret (base64)
+# Добавь этот шаг в workflow перед сборкой (run Gradle)
+# В Settings -> Secrets -> Actions создай secret XPOSED_API_JAR (base64-encoded jar)
+- name: Add xposed-api jar for compileOnly (from secret)
+  if: ${{ secrets.XPOSED_API_JAR != '' }}
+  run: |
+    mkdir -p app/libs
+    echo "${{ secrets.XPOSED_API_JAR }}" | base64 -d > app/libs/xposed-api.jar
