@@ -40,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    // Xposed API — compileOnly (не включается в итоговый APK)
+    // Xposed API — обязательно compileOnly, чтобы НЕ попадало в APK
     compileOnly files('libs/xposed-api.jar')
 
     implementation 'androidx.core:core-ktx:1.10.1'
