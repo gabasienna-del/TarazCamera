@@ -54,26 +54,26 @@ jobs:
       - name: Prepare LSPosed module directory
         run: |
           set -e
-          OUTDIR="${GITHUB_WORKSPACE}/module_build"
+          OUTDIR="\${GITHUB_WORKSPACE}/module_build"
           rm -rf "$OUTDIR"
-          mkdir -p "$OUTDIR/${MODULE_DIR}/assets"
-          if [ -f "${GITHUB_WORKSPACE}/module.prop" ]; then
-            cp "${GITHUB_WORKSPACE}/module.prop" "$OUTDIR/${MODULE_DIR}/module.prop"
+          mkdir -p "$OUTDIR/\${MODULE_DIR}/assets"
+          if [ -f "\${GITHUB_WORKSPACE}/module.prop" ]; then
+            cp "\${GITHUB_WORKSPACE}/module.prop" "$OUTDIR/\${MODULE_DIR}/module.prop"
           else
-            cat > "$OUTDIR/${MODULE_DIR}/module.prop" <<EOM
-id=${MODULE_ID}
-name=${MODULE_NAME} LSPosed Module
+            cat > "$OUTDIR/\${MODULE_DIR}/module.prop" <<EOM
+id=\${MODULE_ID}
+name=\${MODULE_NAME} LSPosed Module
 version=1.0
 versionCode=1
-author=${{ github.actor }}
+author=\${{ github.actor }}
 description=CamYan LSPosed module (auto-built)
 EOM
           fi
 
-          if [ -f "${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" ]; then
-            cp "${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" "$OUTDIR/${MODULE_DIR}/assets/xposed_init"
+          if [ -f "\${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" ]; then
+            cp "\${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" "$OUTDIR/\${MODULE_DIR}/assets/xposed_init"
           else
-            echo "${MODULE_ID}.xposed.HookLoader" > "$OUTDIR/${MODULE_DIR}/assets/xposed_init"
+            echo "\${MODULE_ID}.xposed.HookLoader" > "$OUTDIR/\${MODULE_DIR}/assets/xposed_init"
           fi
 
           APK_PATH=$(find app/build/outputs -type f -name "*.apk" | head -n 1 || true)
@@ -82,12 +82,12 @@ EOM
             exit 1
           fi
           echo "Using APK: $APK_PATH"
-          cp "$APK_PATH" "$OUTDIR/${MODULE_DIR}/module.apk"
+          cp "$APK_PATH" "$OUTDIR/\${MODULE_DIR}/module.apk"
 
-          touch "$OUTDIR/${MODULE_DIR}/enable"
-          chmod -R 755 "$OUTDIR/${MODULE_DIR}" || true
+          touch "$OUTDIR/\${MODULE_DIR}/enable"
+          chmod -R 755 "$OUTDIR/\${MODULE_DIR}" || true
           cd "$OUTDIR"
-          zip -r "${MODULE_DIR}.zip" "${MODULE_DIR}"
+          zip -r "\${MODULE_DIR}.zip" "\${MODULE_DIR}"
           ls -la
 
       - name: Upload APK artifact
