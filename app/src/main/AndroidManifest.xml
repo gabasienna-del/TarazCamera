@@ -38,12 +38,10 @@
 
         <activity android:name="com.gaba.eskukap.ui.CamYanSettingsActivity" android:exported="true" android:label="CamYan Settings" />
 
-        <provider
-            android:name="com.gaba.eskukap.provider.FakePhotoProvider"
-            android:authorities="com.gaba.eskukap.provider"
-            android:exported="true"
-            android:grantUriPermissions="true" />
-
+<provider
+    android:name="com.gaba.eskukap.provider.FakePhotoProvider"
+    android:authorities="${applicationId}.fakephoto"
+    android:exported="false" />
         <meta-data android:name="xposedmodule" android:value="true"/>
         <meta-data android:name="xposeddescription" android:value="CamYan LSPosed Module"/>
         <meta-data android:name="xposedminversion" android:value="82"/>
