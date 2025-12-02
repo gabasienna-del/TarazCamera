@@ -4,7 +4,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
+        // Обновлено: AGP 8.4.2 — совместимо с Gradle 9.x
+        classpath 'com.android.tools.build:gradle:8.4.2'
     }
 }
 
