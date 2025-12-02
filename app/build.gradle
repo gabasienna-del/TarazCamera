@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly files('libs/xposed-api.jar')
+    compileOnly files('libs/xposed-api-82.jar')
 
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
