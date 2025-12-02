@@ -1,128 +1,47 @@
-name: Build APK and LSPosed module
+name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: ["main", "master"]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      MODULE_ID: com.gaba.eskukap
-      MODULE_NAME: CamYan
-      MODULE_DIR: FakeCamera
-
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Ensure Gradle wrapper executable (generate if missing)
+      - name: Download Android commandlinetools
         run: |
-          if [ ! -f "./gradlew" ]; then
-            echo "No gradlew - attempting to generate wrapper"
-            if command -v gradle >/dev/null 2>&1; then
-              gradle wrapper --gradle-version 8.3 || true
-            else
-              echo "No system gradle - please add gradlew to repo"
-            fi
-          fi
-          if [ -f "./gradlew" ]; then chmod +x ./gradlew; fi
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+          mkdir -p "$HOME/android-sdk/cmdline-tools"
+          wget -q -O /tmp/cmdline.zip "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip"
+          unzip -q /tmp/cmdline.zip -d "$HOME/android-sdk/cmdline-tools"
 
-      - name: Setup Android SDK (install build-tools & platform)
-        uses: r0adkll/setup-android@v2
-        with:
-          api-level: 34
-          build-tools: "34.0.0"
-
-      - name: Add xposed-api jar for compileOnly (from repo if present)
+      - name: Install SDK packages
+        env:
+          ANDROID_HOME: ${{ runner.home }}/android-sdk
         run: |
-          if [ -f app/libs/xposed-api.jar ]; then
-            echo "xposed-api.jar present in repo"
-          else
-            echo "xposed-api.jar not found in repo; if you need it, add via secret or commit to app/libs/"
-          fi
+          yes | "$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager --sdk_root="$ANDROID_HOME" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Run Gradle assemble (release, fallback to debug)
-        run: |
-          set -e
-          if [ -f "./gradlew" ]; then
-            ./gradlew clean assembleRelease --no-daemon || ./gradlew clean assembleDebug --no-daemon
-          else
-            echo "gradlew not found — trying system gradle"
-            gradle clean assembleRelease || gradle clean assembleDebug
-          fi
-        working-directory: .
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew || true
 
-      - name: Locate built APK(s)
-        run: |
-          echo "Looking for APKs under app/build/outputs..."
-          find app/build/outputs -type f -name "*.apk" -maxdepth 6 -print || true
-
-      - name: Prepare LSPosed module directory
-        run: |
-          set -e
-          OUTDIR="\${GITHUB_WORKSPACE}/module_build"
-          rm -rf "$OUTDIR" || true
-          mkdir -p "$OUTDIR/\${MODULE_DIR}/assets"
-          if [ -f "\${GITHUB_WORKSPACE}/module.prop" ]; then
-            cp "\${GITHUB_WORKSPACE}/module.prop" "$OUTDIR/\${MODULE_DIR}/module.prop"
-          else
-            cat > "$OUTDIR/\${MODULE_DIR}/module.prop" <<EOM
-id=\${MODULE_ID}
-name=\${MODULE_NAME} LSPosed Module
-version=1.0
-versionCode=1
-author=\${{ github.actor }}
-description=CamYan LSPosed module (auto-built)
-EOM
-          fi
-
-          if [ -f "\${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" ]; then
-            cp "\${GITHUB_WORKSPACE}/app/src/main/assets/xposed_init" "$OUTDIR/\${MODULE_DIR}/assets/xposed_init"
-          else
-            echo "\${MODULE_ID}.xposed.HookLoader" > "$OUTDIR/\${MODULE_DIR}/assets/xposed_init"
-          fi
-
-          APK_PATH=$(find app/build/outputs -type f -name "*.apk" | head -n 1 || true)
-          if [ -z "$APK_PATH" ]; then
-            echo "No APK found - continuing (workflow will likely fail later)"
-          else
-            echo "Using APK: $APK_PATH"
-            cp "$APK_PATH" "$OUTDIR/\${MODULE_DIR}/module.apk" || true
-          fi
-
-          touch "$OUTDIR/\${MODULE_DIR}/enable"
-          chmod -R 755 "$OUTDIR/\${MODULE_DIR}" || true
-          cd "$OUTDIR" || true
-          zip -r "\${MODULE_DIR}.zip" "\${MODULE_DIR}" || true
-          ls -la || true
+      - name: Build debug APK
+        env:
+          ANDROID_HOME: ${{ runner.home }}/android-sdk
+        run: ./gradlew :app:assembleDebug --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: apk-artifact
-          path: |
-            app/build/outputs/**/*.apk
-
-      - name: Upload LSPosed module zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: module-zip
-          path: module_build/FakeCamera.zip
+          name: FakeCamera-app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
