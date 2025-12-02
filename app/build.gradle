@@ -44,3 +44,22 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
 }
+
+/* --- Kotlin stdlib conflict workaround ---
+   Исключаем любые автоматически подтягиваемые kotlin-модули и форсим одну версию.
+   Это убирает duplicate class ошибки при наличии старых kotlin-jar (1.6.0) */
+configurations.all {
+    // Удалит все транзитивные модули org.jetbrains.kotlin из конфигураций
+    exclude group: 'org.jetbrains.kotlin'
+    // Форсим одну версию stdlib (меняй при необходимости)
+    resolutionStrategy {
+        force "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+    }
+}
+
+dependencies {
+    // Явно добавляем нужную версию kotlin stdlib (вместо транзитивных старых)
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+}
