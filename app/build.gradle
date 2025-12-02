@@ -28,9 +28,7 @@ android {
     }
 
     packagingOptions {
-        resources {
-            excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
-        }
+        resources.excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
     }
 }
 
@@ -40,7 +38,6 @@ repositories {
 }
 
 dependencies {
-    // Xposed API — обязательно compileOnly, чтобы НЕ попадало в APK
     compileOnly files('libs/xposed-api.jar')
 
     implementation 'androidx.core:core-ktx:1.10.1'
