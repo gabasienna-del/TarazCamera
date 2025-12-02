@@ -63,3 +63,23 @@ dependencies {
     // Явно добавляем нужную версию kotlin stdlib (вместо транзитивных старых)
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
 }
+
+/* ---- FIX DUPLICATE KOTLIN CLASSES ---- */
+configurations.all {
+    // отключаем все старые kotlin-stdlib, kotlin-jdk7, kotlin-jdk8
+    exclude group: 'org.jetbrains.kotlin'
+
+    resolutionStrategy {
+        // заставляем использовать одну версию Kotlin
+        force "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10"
+        force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+    }
+}
+
+dependencies {
+    // явно подключаем kotlin-stdlib, чтобы Gradle не тянул старые
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.10"
+}
+/* ---- END FIX ---- */
+
