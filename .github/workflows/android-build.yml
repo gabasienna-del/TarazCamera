@@ -9,10 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      GRADLE_OPTS: "-Dorg.gradle.instrumentation.agent.disabled=true"
-      ORG_GRADLE_PROJECT_disableInstrumentationAgent: "true"
-
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
@@ -23,23 +19,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Install Android SDK
         uses: android-actions/setup-android@v2
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build APK (no instrumentation, clean env)
+      - name: Build APK
         run: ./gradlew assembleDebug --no-daemon --no-configuration-cache
 
       - name: Upload APK artifact
