@@ -9,37 +9,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      GRADLE_OPTS: "-Dorg.gradle.instrumentation.agent.disabled=true"
-      ORG_GRADLE_PROJECT_disableInstrumentationAgent: "true"
-
     steps:
-    - name: Checkout project
-      uses: actions/checkout@v4
+      - name: Checkout project
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: 17
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Disable Gradle Agent (extra protection)
-      run: |
-        echo "org.gradle.instrumentation.agent.disabled=true" >> gradle.properties
-        mkdir -p ~/.gradle
-        echo "org.gradle.instrumentation.agent.disabled=true" >> ~/.gradle/gradle.properties
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v2
 
-    - name: Install Android SDK
-      uses: android-actions/setup-android@v2
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
 
-    - name: Make gradlew executable
-      run: chmod +x gradlew
+      - name: Build APK (no instrumentation, clean env)
+        run: ./gradlew assembleDebug --no-daemon --no-configuration-cache
 
-    - name: Build APK
-      run: ./gradlew assembleDebug --no-daemon --no-configuration-cache
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: debug-apk
-        path: app/build/outputs/apk/debug/*.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
